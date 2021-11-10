@@ -1,0 +1,18 @@
+services:
+  ibkr:
+    build: ./app
+    ports:
+      - "6080:6080"
+      - "8888:8888"
+    restart: unless-stopped
+    secrets:
+      - ibkr_username
+      - ibkr_password
+    stop_signal: SIGKILL
+ 
+
+secrets:
+  ibkr_username:
+    file: .username
+  ibkr_password:
+    file: .password

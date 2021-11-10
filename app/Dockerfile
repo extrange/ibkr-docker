@@ -1,0 +1,37 @@
+# Debian's apt is faster than Ubuntu's
+FROM debian:latest
+
+# procps is needed for twsstart.sh on Debian
+RUN apt update && \
+    apt install -y \
+    git \
+    nginx \ 
+    procps \
+    python3 \
+    unzip \ 
+    wget \
+    x11vnc \
+    xterm \
+    xvfb
+
+# Download and install offline version of TWS
+RUN wget https://download2.interactivebrokers.com/installers/tws/latest-standalone/tws-latest-standalone-linux-x64.sh -O install.sh \
+    && chmod +x install.sh \
+    && yes '' | ./install.sh \
+    && rm install.sh
+
+# Install a fixed version of IBC
+RUN wget https://github.com/IbcAlpha/IBC/releases/download/3.11.0/IBCLinux-3.11.0.zip -O ibc.zip \
+    && unzip ibc.zip -d /opt/ibc \
+    && rm ibc.zip \
+    && chmod +x /opt/ibc/*.sh /opt/ibc/*/*.sh
+
+# Setup noVNC for browser VNC access
+RUN git clone https://github.com/novnc/noVNC.git && \
+    chmod +x ./noVNC/utils/novnc_proxy
+
+# Copy config files over
+COPY config.ini twsstart.sh /opt/ibc/
+COPY start.sh nginx.conf ./
+
+CMD [ "./start.sh" ]
