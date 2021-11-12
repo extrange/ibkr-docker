@@ -9,7 +9,8 @@ services:
       - ibkr_username
       - ibkr_password
     stop_signal: SIGKILL
- 
+    environment:
+      - TWS_MAJOR_VRSN=1011
 
 secrets:
   ibkr_username:

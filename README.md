@@ -37,6 +37,12 @@ This container is setup to connect to a paper account. To switch to a live accou
 
 You will have to restart the container after making these changes.
 
+## TWS Version Changes
+
+TWS is updated frequently. Whenever the major version is incremented, you need to reconfigure the script.
+
+Modify the value of `TWS_MAJOR_VRSN` in `docker-compose.yml` to the latest version number without periods/alphabets (i.e. 10.11e -> 1011)
+
 ## Changes from the default config.ini
 
 ```config
@@ -51,5 +57,3 @@ TradingMode=paper
 - If either of `.username` or `.password` are missing, Docker [creates empty folders with the same name](https://github.com/docker/compose/issues/5377)
 
 ## Todo
-
-- optimize noVNC (download and setup websockify)
