@@ -23,8 +23,7 @@ RUN wget https://download2.interactivebrokers.com/installers/tws/latest-standalo
 # Install a fixed version of IBC
 RUN wget https://github.com/IbcAlpha/IBC/releases/download/3.11.0/IBCLinux-3.11.0.zip -O ibc.zip \
     && unzip ibc.zip -d /opt/ibc \
-    && rm ibc.zip \
-    && chmod +x /opt/ibc/*.sh /opt/ibc/*/*.sh
+    && rm ibc.zip
 
 # Setup noVNC for browser VNC access
 RUN git clone https://github.com/novnc/noVNC.git && \
@@ -33,5 +32,8 @@ RUN git clone https://github.com/novnc/noVNC.git && \
 # Copy config files over
 COPY config.ini twsstart.sh /opt/ibc/
 COPY start.sh nginx.conf ./
+
+# Set permissions
+RUN chmod +x *.sh /opt/ibc/*.sh /opt/ibc/*/*.sh
 
 CMD [ "./start.sh" ]
