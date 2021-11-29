@@ -14,6 +14,6 @@ services:
 
 secrets:
   ibkr_username:
-    file: .username
+    file: ./username.txt
   ibkr_password:
-    file: .password
+    file: ./password.txt

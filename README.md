@@ -16,7 +16,7 @@
   - `git clone https://github.com/extrange/ibkr-docker.git`
   - `cd ibkr-docker`
 - Enter your credentials:
-  - Create 2 files named `.username` and `.password` and input your IBKR username/password accordingly
+  - Create 2 files named `username.txt` and `password.txt` and input your IBKR username/password accordingly
 - Build the image:
   - `docker-compose build`
 - Start the container:
@@ -54,6 +54,6 @@ TradingMode=paper
 
 ## Known Issues
 
-- If either of `.username` or `.password` are missing, Docker [creates empty folders with the same name](https://github.com/docker/compose/issues/5377)
+- If either of `username.txt` or `password.txt` are missing, Docker [creates empty folders with the same name](https://github.com/docker/compose/issues/5377)
 
 ## Todo
