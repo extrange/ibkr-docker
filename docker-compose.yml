@@ -2,8 +2,8 @@ services:
   ibkr:
     build: ./app
     ports:
-      - "6080:6080"
-      - "8888:8888"
+      - "127.0.0.1:6080:6080"
+      - "127.0.0.1:8888:8888"
     restart: unless-stopped
     secrets:
       - ibkr_username
