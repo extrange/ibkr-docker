@@ -1,6 +1,9 @@
 services:
   ibkr:
-    build: ./app
+    build:
+      context: ./app
+      args:
+        ibc_version: 3.12.0
     ports:
       - "127.0.0.1:6080:6080"
       - "127.0.0.1:8888:8888"
