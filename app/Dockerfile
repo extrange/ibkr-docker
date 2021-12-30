@@ -21,8 +21,8 @@ RUN wget https://download2.interactivebrokers.com/installers/tws/latest-standalo
     && rm install.sh
 
 # Install the specified version of IBC
-ARG ibc_version=3.11.0
-RUN wget https://github.com/IbcAlpha/IBC/releases/download/$ibc_version/IBCLinux-$ibc_version.zip -O ibc.zip \
+ARG ibc_version
+RUN wget https://github.com/IbcAlpha/IBC/releases/download/${ibc_version}/IBCLinux-${ibc_version}.zip -O ibc.zip \
     && unzip ibc.zip -d /opt/ibc \
     && rm ibc.zip
 
