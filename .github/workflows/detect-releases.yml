@@ -49,7 +49,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create 'ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' \
+          gh release create '${{ steps.version.outputs.build_version }}-${{ matrix.channel }}' \
             -t 'ibgateway ${{ matrix.channel }} ${{ steps.version.outputs.build_version }}' \
             ibgateway-*
 
