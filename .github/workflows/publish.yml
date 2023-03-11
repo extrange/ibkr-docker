@@ -1,0 +1,53 @@
+name: "Publish Docker"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish-docker:
+    name: Publish Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          # Checkout branch which triggered the action
+          ref: ${{ github.ref }}
+          
+      - name: Extract Channel from Branch Name 
+        id: channel
+        run: |
+          channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
+          echo "channel=$channel" >> $GITHUB_OUTPUT
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/extrange/ibkr
+          flavor: |
+            latest=false
+
+          # Tags for major, major.minor and stable/latest
+          tags: |
+            type=match,pattern=(\d+.\d+),group=1
+            type=match,pattern=(\d+.\d+.\w+),group=1
+            type=match,pattern=(\d+.\d+.\w+)+\-(stable|latest),group=2
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          # Build context
+          context: ${{ steps.channel.outputs.channel }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

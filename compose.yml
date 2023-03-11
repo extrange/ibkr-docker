@@ -6,6 +6,9 @@ services:
       - 6080:6080
     environment:
       GATEWAY_OR_TWS: tws
-      IBC_TradingMode: paper
       USERNAME: ${USERNAME}
       PASSWORD: ${PASSWORD}
+      IBC_TradingMode: paper
+      IBC_AcceptBidAskLastSizeDisplayUpdateNotification: accept
+      IBC_AcceptIncomingConnectionAction: accept
+      IBC_AcceptNonBrokerageAccountWarning: yes
