@@ -7,9 +7,9 @@ RUN apt update && \
     ca-certificates git libxtst6 libgtk-3-0 openbox procps python3 socat tigervnc-standalone-server unzip wget2 xterm
 
 # Setup noVNC for browser VNC access
-RUN git clone https://github.com/novnc/noVNC.git && \
+RUN git clone --depth 1 https://github.com/novnc/noVNC.git && \
     chmod +x ./noVNC/utils/novnc_proxy && \
-    git clone https://github.com/novnc/websockify.git /noVNC/utils/websockify
+    git clone --depth 1 https://github.com/novnc/websockify.git /noVNC/utils/websockify
 
 # Override default noVNC file listing
 COPY image-files/index.html /noVNC
@@ -19,11 +19,19 @@ RUN wget2 https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLi
     && unzip ibc.zip -d /opt/ibc \
     && rm ibc.zip
 
-# Download IB Gateway (which contains TWS)
-RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/ibgateway-${CHANNEL}@${VERSION}/ibgateway-${VERSION}-standalone-linux-x64.sh -O install.sh \
-    && chmod +x install.sh \
-    && yes '' | ./install.sh \
-    && rm install.sh
+ENV INSTALL_FILENAME="ibgateway-${VERSION}-standalone-linux-x64.sh"
+
+# Fetch hashes
+RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/${VERSION}-${CHANNEL}/ibgateway-${VERSION}-standalone-linux-x64.sh.sha256 \
+    -O hash
+
+# Download IB Gateway (which contains TWS) and check hashes
+RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/${VERSION}-${CHANNEL}/ibgateway-${VERSION}-standalone-linux-x64.sh \
+    -O "$INSTALL_FILENAME" \
+    && sha256sum -c hash \
+    && chmod +x "$INSTALL_FILENAME" \
+    && yes '' | "./$INSTALL_FILENAME"  \
+    && rm "$INSTALL_FILENAME"
 
 # Copy scripts
 COPY image-files/start.sh image-files/replace.sh ./
