@@ -19,11 +19,19 @@ RUN wget2 https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLi
     && unzip ibc.zip -d /opt/ibc \
     && rm ibc.zip
 
-# Download IB Gateway (which contains TWS)
-RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/ibgateway-latest@10.21.1p/ibgateway-10.21.1p-standalone-linux-x64.sh -O install.sh \
-    && chmod +x install.sh \
-    && yes '' | ./install.sh \
-    && rm install.sh
+ENV INSTALL_FILENAME="ibgateway-10.21.1p-standalone-linux-x64.sh"
+
+# Fetch hashes
+RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/ibgateway-latest@10.21.1p/ibgateway-10.21.1p-standalone-linux-x64.sh.sha256 \
+    -O hash
+
+# Download IB Gateway (which contains TWS) and check hashes
+RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/ibgateway-latest@10.21.1p/ibgateway-10.21.1p-standalone-linux-x64.sh \
+    -O "$INSTALL_FILENAME" \
+    && sha256sum -c hash \
+    && chmod +x "$INSTALL_FILENAME" \
+    && yes '' | "./$INSTALL_FILENAME"  \
+    && rm "$INSTALL_FILENAME"
 
 # Copy scripts
 COPY image-files/start.sh image-files/replace.sh ./

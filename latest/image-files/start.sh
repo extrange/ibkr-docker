@@ -12,7 +12,7 @@ Xvnc -SecurityTypes None -AlwaysShared=1 -geometry 1920x1080 :0 &
 ./noVNC/utils/novnc_proxy --vnc localhost:5900 &
 
 # Start openbox
-openbox
+openbox &
 
 # Start either TWS or IB Gateway
 if [[ -z ${GATEWAY_OR_TWS} ]]; then
@@ -27,37 +27,37 @@ else
     exit 1
 fi
 
-# forward correct port with socat
-if [[ ${gateway_or_tws@l} = "gateway" ]]; then
-    if [[ ${ibc_tradingmode:-live} = "live" ]]; then
-        # ibgateway live
+# Forward correct port with socat
+if [[ ${GATEWAY_OR_TWS@L} = "gateway" ]]; then
+    if [[ ${IBC_TradingMode:-live} = "live" ]]; then
+        # IBGateway Live
         port=4001
     else
-        # ibgateway paper
+        # IBGateway Paper
         port=4002
     fi
-elif [[ ${ibc_tradingmode:-live} = "live" ]]; then
-    # tws live
+elif [[ ${IBC_TradingMode:-live} = "live" ]]; then
+    # TWS Live
     port=7496
 else
-    # tws paper
+    # TWS Paper
     port=7497
 fi
 
-printf "listening for incoming api connections on %s\n" $port
-socat -d -d -d tcp-listen:8888,fork tcp:127.0.0.1:${port} &
+printf "Listening for incoming API connections on %s\n" $port
+socat -d -d -d TCP-LISTEN:8888,fork TCP:127.0.0.1:${port} &
 
-# hacky way to get the major version for ib gateway/tws
-tws_major_version=$(ls ~/jts/*/.)
+# Hacky way to get the major version for IB Gateway/TWS
+TWS_MAJOR_VERSION=$(ls ~/Jts/*/.)
 
-# override /opt/ibc/config.ini with environment variables
+# Override /opt/ibc/config.ini with environment variables
 ./replace.sh ~/ibc/config.ini
 
 # --on2fatimeout was previously supplied by gatewaystart.sh/twsstart.sh,
-# so we need to supply it here. the rest of the arguments can be read from
+# so we need to supply it here. The rest of the arguments can be read from
 # the config.ini file.
 
-# exec /opt/ibc/scripts/ibcstart.sh "${tws_major_version}" $command \
-#     "--user=${USERNAME}" \
-#     "--pw=${PASSWORD}" \
-#     "--on2fatimeout=${TWOFA_TIMEOUT_ACTION:-restart}"
+exec /opt/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VERSION}" $command \
+    "--user=${USERNAME}" \
+    "--pw=${PASSWORD}" \
+    "--on2fatimeout=${TWOFA_TIMEOUT_ACTION:-restart}"
