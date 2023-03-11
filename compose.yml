@@ -1,0 +1,11 @@
+services:
+  ibkr:
+    build:
+      context: latest/.
+    ports:
+      - 6080:6080
+    environment:
+      GATEWAY_OR_TWS: tws
+      IBC_TradingMode: paper
+      USERNAME: ${USERNAME}
+      PASSWORD: ${PASSWORD}

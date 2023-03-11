@@ -12,7 +12,6 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        type: ["ibgateway", "tws"]
         channel: ["stable", "latest"]
     steps:
       - uses: actions/checkout@v3
@@ -20,7 +19,7 @@ jobs:
       - name: Get Latest Version
         id: version
         run: |
-          res=$(curl -s https://download2.interactivebrokers.com/installers/${{ matrix.type }}/${{ matrix.channel }}-standalone/version.json)
+          res=$(curl -s https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/version.json)
           build_version=$(grep -oP '(?<=buildVersion":")[^"]+' <<< "$res")
           echo "build_version=$build_version" >> $GITHUB_OUTPUT
 
@@ -30,17 +29,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release list > /tmp/releases
-          if grep -qF '${{ matrix.type }}-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' /tmp/releases
+          if grep -qF 'ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' /tmp/releases
           then
             echo "has_update=false" >> $GITHUB_OUTPUT
           else
             echo "has_update=true" >> $GITHUB_OUTPUT
           fi
+          
       - name: Download
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
         run: |
-          download_url='https://download2.interactivebrokers.com/installers/${{ matrix.type }}/${{ matrix.channel }}-standalone/${{ matrix.type }}-${{ matrix.channel }}-standalone-linux-x64.sh'
-          dest='${{ matrix.type }}-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh'
+          download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/ibgateway-${{ matrix.channel }}-standalone-linux-x64.sh'
+          dest='ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh'
           curl -sSL "$download_url" --output "$dest"
           sha256sum "$dest" > "${dest}.sha256"
 
@@ -49,10 +49,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create '${{ matrix.type }}-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' \
-            -t '${{ matrix.type }} ${{ matrix.channel }} ${{ steps.version.outputs.build_version }}' \
-            -n '${{ matrix.type }} ${{ matrix.channel }} ${{ steps.version.outputs.build_version }} release files' \
-            ${{ matrix.type }}-*
+          gh release create 'ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' \
+            -t 'ibgateway ${{ matrix.channel }} ${{ steps.version.outputs.build_version }}' \
+            ibgateway-*
 
       # - name: Update ${{ matrix.channel }}
       #   if: ${{ steps.check-update.outputs.has_update == 'true' }}
