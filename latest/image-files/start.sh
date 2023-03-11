@@ -15,9 +15,10 @@ Xvnc -SecurityTypes None -AlwaysShared=1 -geometry 1920x1080 :0 &
 openbox &
 
 # Start either TWS or IB Gateway
-if [[ -z ${GATEWAY_OR_TWS} ]]; then
-    printf 'GATEWAY_OR_TWS not set\n'
-    exit 1
+if [[ -z ${GATEWAY_OR_TWS:-} ]]; then
+    # Start TWS by default if not specified
+    GATEWAY_OR_TWS=tws
+    command=
 elif [[ ${GATEWAY_OR_TWS@L} = "gateway" ]]; then
     command='-g'
 elif [[ ${GATEWAY_OR_TWS@L} = "tws" ]]; then
@@ -58,6 +59,6 @@ TWS_MAJOR_VERSION=$(ls ~/Jts/*/.)
 # the config.ini file.
 
 exec /opt/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VERSION}" $command \
-    "--user=${USERNAME}" \
-    "--pw=${PASSWORD}" \
+    "--user=${USERNAME:-}" \
+    "--pw=${PASSWORD:-}" \
     "--on2fatimeout=${TWOFA_TIMEOUT_ACTION:-restart}"
