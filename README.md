@@ -148,7 +148,7 @@ Set the environment variable `IBC_TradingMode` to `paper` or `live`.
 - New versions of IB Gateway are checked for daily, and fetched if available, as a release (`detect-releases.yml`).
 - A PR with the updated `Dockerfile` (obtained by running `build.sh <latest/stable> <version>`) is automatically created
 - I manually merge the PR, and tag the resulting commit with `docker-<version>-<latest/stable>`
-- Pushing the tag triggers a docker build action (`publish.yml`, based on the `docker-` prefix), which reads the version and release channel (latest/stable) from the tag, and then builds, tags and pushes the image to [ghcr.io/extrange/ibkr][images].
+- Pushing the tag triggers a docker build action (`publish.yml`, based on the `docker-` prefix), which reads the version and release channel (latest/stable) from the tag, and then fetches the repo at the tag's commit, builds, tags and pushes the image to [ghcr.io/extrange/ibkr][images].
 
 [images]: https://github.com/extrange/ibkr-docker/pkgs/container/ibkr
 [tws-api]: https://interactivebrokers.github.io/tws-api/introduction.html
