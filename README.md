@@ -1,6 +1,7 @@
 # Interactive Brokers in Docker
 
 <!--ts-->
+
 - [Interactive Brokers in Docker](#interactive-brokers-in-docker)
   - [Features](#features)
   - [Getting Started](#getting-started)
@@ -9,6 +10,7 @@
     - [Environment Variables](#environment-variables)
   - [Docker Images](#docker-images)
   - [FAQ](#faq)
+    - [Cannot connect to API when using TWS](#cannot-connect-to-api-when-using-tws)
     - [Error: `library initialization failed - unable to allocate file descriptor table - out of memory/root/ibc/scripts/ibcstart.sh`](#error-library-initialization-failed---unable-to-allocate-file-descriptor-table---out-of-memoryrootibcscriptsibcstartsh)
     - [Which tag to use, `latest` or `stable`?](#which-tag-to-use-latest-or-stable)
     - [What is the difference between IB Gateway and Trader Workstation (TWS)?](#what-is-the-difference-between-ib-gateway-and-trader-workstation-tws)
@@ -18,7 +20,7 @@
   - [Repository Architecture](#repository-architecture)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
-<!-- Added by: user, at: Sun Mar 12 04:48:09 PM +08 2023 -->
+<!-- Added by: user, at: Wed Apr 19 10:30:30 PM +08 2023 -->
 
 <!--te-->
 
@@ -93,7 +95,7 @@ View at [localhost:6080](http://localhost:6080).
 ### Environment Variables
 
 | Variable               | Description                                                      | Default    |
-|------------------------|------------------------------------------------------------------|------------|
+| ---------------------- | ---------------------------------------------------------------- | ---------- |
 | `USERNAME`             | Username                                                         | `edemo`    |
 | `PASSWORD`             | Password                                                         | `demouser` |
 | `GATEWAY_OR_TWS`       | What to start, either `tws` or `gateway`                         | `tws`      |
@@ -113,6 +115,10 @@ See possible values [here][config.ini].
 See available tags and versions [here.][images]
 
 ## FAQ
+
+### Cannot connect to API when using TWS
+
+You will need to manually enable `Enable ActiveX and Socket Clients` (see this [issue][tws-api-issue]).
 
 ### Error: `library initialization failed - unable to allocate file descriptor table - out of memory/root/ibc/scripts/ibcstart.sh`
 
@@ -162,3 +168,4 @@ Set the environment variable `IBC_TradingMode` to `paper` or `live`.
 [ibgateway]: https://www.interactivebrokers.com/en/trading/ibgateway-stable.php
 [tws-vs-gateway]: https://stackoverflow.com/questions/32778954/interactive-brokers-api-trader-workstation-tws-vs-ib-gateway
 [tws-ports]: https://www.interactivebrokers.com/en/?f=%2Fen%2Fgeneral%2Ftws-notes-954.php
+[tws-api-issue]: https://github.com/extrange/ibkr-docker/issues/16#issuecomment-1514830115
