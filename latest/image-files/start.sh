@@ -5,6 +5,9 @@ set -Eeuo pipefail
 
 export DISPLAY=:0
 
+# Clear previous lockfile
+rm -f /tmp/.X0-lock
+
 # Start VNC server
 Xvnc -SecurityTypes None -AlwaysShared=1 -geometry 1920x1080 :0 &
 
@@ -49,7 +52,7 @@ printf "Listening for incoming API connections on %s\n" $port
 socat -d -d TCP-LISTEN:8888,fork TCP:127.0.0.1:${port} &
 
 # Hacky way to get the major version for IB Gateway/TWS
-TWS_MAJOR_VERSION=$(ls ~/Jts/*/.)
+TWS_MAJOR_VERSION=$(ls ~/Jts/ibgateway/.)
 
 # Override /opt/ibc/config.ini with environment variables
 ./replace.sh ~/ibc/config.ini

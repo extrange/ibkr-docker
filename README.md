@@ -1,20 +1,21 @@
 # Interactive Brokers in Docker
 
 <!--ts-->
-   * [Features](#features)
-   * [Getting Started](#getting-started)
-      * [Using docker run](#using-docker-run)
-      * [Using docker compose (recommended)](#using-docker-compose-recommended)
-      * [Environment Variables](#environment-variables)
-   * [Docker Images](#docker-images)
-   * [FAQ](#faq)
-      * [Error: library initialization failed - unable to allocate file descriptor table - out of memory/root/ibc/scripts/ibcstart.sh](#error-library-initialization-failed---unable-to-allocate-file-descriptor-table---out-of-memoryrootibcscriptsibcstartsh)
-      * [Which tag to use, latest or stable?](#which-tag-to-use-latest-or-stable)
-      * [What is the difference between IB Gateway and Trader Workstation (TWS)?](#what-is-the-difference-between-ib-gateway-and-trader-workstation-tws)
-      * [Do I need to download TWS separately?](#do-i-need-to-download-tws-separately)
-      * [What ports does TWS/IB Gateway use internally?](#what-ports-does-twsib-gateway-use-internally)
-      * [How do I configure the default login to paper/live trading?](#how-do-i-configure-the-default-login-to-paperlive-trading)
-   * [Repository Architecture](#repository-architecture)
+- [Interactive Brokers in Docker](#interactive-brokers-in-docker)
+  - [Features](#features)
+  - [Getting Started](#getting-started)
+    - [Using `docker run`](#using-docker-run)
+    - [Using `docker compose` (recommended)](#using-docker-compose-recommended)
+    - [Environment Variables](#environment-variables)
+  - [Docker Images](#docker-images)
+  - [FAQ](#faq)
+    - [Error: `library initialization failed - unable to allocate file descriptor table - out of memory/root/ibc/scripts/ibcstart.sh`](#error-library-initialization-failed---unable-to-allocate-file-descriptor-table---out-of-memoryrootibcscriptsibcstartsh)
+    - [Which tag to use, `latest` or `stable`?](#which-tag-to-use-latest-or-stable)
+    - [What is the difference between IB Gateway and Trader Workstation (TWS)?](#what-is-the-difference-between-ib-gateway-and-trader-workstation-tws)
+    - [Do I need to download TWS separately?](#do-i-need-to-download-tws-separately)
+    - [What ports does TWS/IB Gateway use internally?](#what-ports-does-twsib-gateway-use-internally)
+    - [How do I configure the default login to paper/live trading?](#how-do-i-configure-the-default-login-to-paperlive-trading)
+  - [Repository Architecture](#repository-architecture)
 
 <!-- Created by https://github.com/ekalinin/github-markdown-toc -->
 <!-- Added by: user, at: Sun Mar 12 04:48:09 PM +08 2023 -->
@@ -147,8 +148,9 @@ Set the environment variable `IBC_TradingMode` to `paper` or `live`.
 
 - New versions of IB Gateway are checked for daily, and fetched if available, as a release (`detect-releases.yml`).
 - A PR with the updated `Dockerfile` (obtained by running `build.sh <latest/stable> <version>`) is automatically created
-- I manually merge the PR, and tag the resulting commit with `docker-<version>-<latest/stable>`
-- Pushing the tag triggers a docker build action (`publish.yml`, based on the `docker-` prefix), which reads the version and release channel (latest/stable) from the tag, and then fetches the repo at the tag's commit, builds, tags and pushes the image to [ghcr.io/extrange/ibkr][images].
+- I test the updated configuration (both IB Gateway/TWS)
+- I then manually merge the PR, and tag the resulting commit with `git tag docker-<version>-<latest/stable>`
+- Pushing the tag triggers a docker build action (`publish.yml`, based on the `docker-` prefix), which reads the version and release channel (latest/stable) from the tag, and then fetches the repo at the tag's commit, builds from the appropriate folder (latest/stable), tags and pushes the image to [ghcr.io/extrange/ibkr][images].
 
 [images]: https://github.com/extrange/ibkr-docker/pkgs/container/ibkr
 [tws-api]: https://interactivebrokers.github.io/tws-api/introduction.html

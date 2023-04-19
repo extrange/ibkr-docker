@@ -3,7 +3,7 @@
 # Prepares Dockerfile and image files for later build step
 
 if [ $# -ne 2 ]; then
-	echo "Usage: ./update-dockerfile.sh <stable|latest> <version>"
+	echo "Usage: ./build.sh <stable|latest> <version>"
 	exit 1
 fi
 
