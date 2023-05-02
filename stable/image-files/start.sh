@@ -64,4 +64,5 @@ TWS_MAJOR_VERSION=$(ls ~/Jts/ibgateway/.)
 exec /opt/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VERSION}" $command \
     "--user=${USERNAME:-}" \
     "--pw=${PASSWORD:-}" \
-    "--on2fatimeout=${TWOFA_TIMEOUT_ACTION:-restart}"
+    "--on2fatimeout=${TWOFA_TIMEOUT_ACTION:-restart}" \
+    "--tws-settings-path=${TWS_SETTINGS_PATH:-}"
