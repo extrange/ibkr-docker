@@ -10,6 +10,7 @@
     - [Environment Variables](#environment-variables)
   - [Docker Images](#docker-images)
   - [FAQ](#faq)
+    - [How do I save TWS settings locally?](#how-do-i-save-tws-settings-locally)
     - [Cannot connect to API when using TWS](#cannot-connect-to-api-when-using-tws)
     - [Error: `library initialization failed - unable to allocate file descriptor table - out of memory/root/ibc/scripts/ibcstart.sh`](#error-library-initialization-failed---unable-to-allocate-file-descriptor-table---out-of-memoryrootibcscriptsibcstartsh)
     - [Which tag to use, `latest` or `stable`?](#which-tag-to-use-latest-or-stable)
@@ -95,11 +96,12 @@ View at [localhost:6080](http://localhost:6080).
 ### Environment Variables
 
 | Variable               | Description                                                      | Default    |
-| ---------------------- | ---------------------------------------------------------------- | ---------- |
+|------------------------|------------------------------------------------------------------|------------|
 | `USERNAME`             | Username                                                         | `edemo`    |
 | `PASSWORD`             | Password                                                         | `demouser` |
 | `GATEWAY_OR_TWS`       | What to start, either `tws` or `gateway`                         | `tws`      |
 | `TWOFA_TIMEOUT_ACTION` | [2FA timeout action][twofa-timeout]. Either `restart` or `exit`. | `restart`  |
+| `TWS_SETTINGS_PATH`    | (optional) Path to store TWS settings (see FAQ)                  |            |
 
 Variables prefixed with `IBC_` will override settings in [IBCAlpha][ibc-alpha]'s `config.ini`, e.g.:
 
@@ -115,6 +117,21 @@ See possible values [here][config.ini].
 See available tags and versions [here.][images]
 
 ## FAQ
+
+### How do I save TWS settings locally?
+
+If you want to save TWS settings locally (e.g. to persist settings across container runs), set `TWS_SETTINGS_PATH` to say, `/settings`. Then, add a bind mount on your local filesystem, such as in the following `compose.yml`:
+
+```yaml
+#...
+  environment:
+    TWS_SETTINGS_PATH: /settings
+    #...
+  volumes:
+    - ./settings:/settings:rw
+```
+
+Now, TWS will load settings from your local filesystem for each container run.
 
 ### Cannot connect to API when using TWS
 
