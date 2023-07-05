@@ -48,8 +48,8 @@ else
     port=7497
 fi
 
-printf "Listening for incoming API connections on %s\n" $port
-socat -d -d TCP-LISTEN:8888,fork TCP:127.0.0.1:${port} &
+#printf "Listening for incoming API connections on %s\n" $port
+#socat -d -d TCP-LISTEN:8888,fork TCP:127.0.0.1:${port} &
 
 # Hacky way to get the major version for IB Gateway/TWS
 TWS_MAJOR_VERSION=$(ls ~/Jts/ibgateway/.)
