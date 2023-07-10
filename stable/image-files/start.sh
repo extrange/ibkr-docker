@@ -51,6 +51,9 @@ fi
 printf "Listening for incoming API connections on %s\n" $port
 socat -d -d TCP-LISTEN:8888,fork TCP:127.0.0.1:${port} &
 
+# start cron
+cron
+
 # Hacky way to get the major version for IB Gateway/TWS
 TWS_MAJOR_VERSION=$(ls ~/Jts/ibgateway/.)
 
@@ -66,3 +69,4 @@ exec /opt/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VERSION}" $command \
     "--pw=${PASSWORD:-}" \
     "--on2fatimeout=${TWOFA_TIMEOUT_ACTION:-restart}" \
     "--tws-settings-path=${TWS_SETTINGS_PATH:-}"
+
