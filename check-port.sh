@@ -1,13 +1,8 @@
-host="localhost"
-port="8888"
+#!/bin/bash
 
-# 使用 nmap 命令检查端口是否打开
-result=$(nmap -p $port $host | grep -w $port | awk '{print $2}')
-
-# 检查结果
-if [ "$result" = "open" ]; then
-  echo "Port $port is open on host $host"
+# Check if both ports are open
+if lsof -i :8888 | grep -q LISTEN && lsof -i :4002 | grep -q LISTEN; then
+  exit 0
 else
-  echo "Port $port is not open on host $host"
-  socat -d -d TCP-LISTEN:8888,fork TCP:127.0.0.1:${port} &
+  exit 1
 fi
