@@ -1,6 +1,6 @@
 FROM debian:latest as setup
 
-ENV IBC_VERSION=3.16.2
+ENV IBC_VERSION=3.17.0
 
 RUN apt update && \
     apt install --no-install-recommends -y \
