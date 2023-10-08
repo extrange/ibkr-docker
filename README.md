@@ -89,6 +89,8 @@ services:
       # See below for more details
 ```
 
+**Important**: Boolean-like values (e.g. `yes`/`no`) must be wrapped in single quotes to prevent them from being interpreted as `True`/`False` by th YAML parser.
+
 View at [localhost:6080](http://localhost:6080).
 
 [TWS API][tws-api] is accessible at port `8888`.
