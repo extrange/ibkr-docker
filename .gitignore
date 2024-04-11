@@ -1,2 +1,6 @@
 .env
 compose.yml
+.pdm-python
+.venv
+*.pyc
+__pycache__
