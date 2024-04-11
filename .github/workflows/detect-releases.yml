@@ -64,6 +64,11 @@ jobs:
 
       - name: Update ${{ needs.check-new-version.outputs.channel }}/
         run: ./build.sh ${{ needs.check-new-version.outputs.channel }} ${{ needs.check-new-version.outputs.build_version }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
       
       - name: Set up pdm
         run: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
