@@ -19,6 +19,8 @@ jobs:
       has_update: ${{ steps.check-update.outputs.has_update }}
       channel: ${{ matrix.channel }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Get Latest IB Gateway Version
         id: version
         run: |
