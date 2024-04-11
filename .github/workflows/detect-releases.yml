@@ -76,15 +76,15 @@ jobs:
       - name: Update and sync dependencies
         run: pdm update -u 
       
-      - name: Build and start Docker image
+      - name: Build Docker image
         run: |
-          docker build ${{ needs.check-new-version.outputs.channel }} -t image && ./start-docker.sh
+          docker build ${{ needs.check-new-version.outputs.channel }} -t image
+
+      - name: Test ${{ needs.check-new-version.outputs.channel }}
+        run: ./start-docker.sh && pdm run pytest
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
-
-      - name: Test ${{ needs.check-new-version.outputs.channel }}
-        run: pdm run pytest
 
       - name: Commit with appropriate docker tag
         uses: stefanzweifel/git-auto-commit-action@v5
