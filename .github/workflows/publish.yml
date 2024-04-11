@@ -48,7 +48,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           # Build context
           context: ${{ steps.channel.outputs.channel }}
