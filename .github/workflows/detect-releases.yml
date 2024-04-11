@@ -1,21 +1,24 @@
-name: Detect and Publish IB Gateway/TWS Releases
+name: Detect, Test and Publish IB Gateway/TWS Releases
 
 on:
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 8 * * *" # 8AM UTC daily
 
   workflow_dispatch:
 
 jobs:
-  detect-release:
+  check-new-version:
+    name: Check for new IBKR stable/latest versions
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         channel: ["stable", "latest"]
+    outputs:
+      build_version: ${{ steps.version.outputs.build_version }}
+      has_update: ${{ steps.check-update.outputs.has_update }}
+      channel: ${{ matrix.channel }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Get Latest IB Gateway Version
         id: version
         run: |
@@ -33,39 +36,45 @@ jobs:
           else
             echo "has_update=true" >> $GITHUB_OUTPUT
           fi
-          
+
+  test-and-commit:
+    name: Test version and commit
+    runs-on: ubuntu-latest
+    needs: check-new-version
+    if: needs.check-new-version.outputs.has_update == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Download IB Gateway
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
         run: |
-          download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/ibgateway-${{ matrix.channel }}-standalone-linux-x64.sh'
-          dest='ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh'
+          download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ needs.check-new-version.outputs.channel }}-standalone/ibgateway-${{ needs.check-new-version.outputs.channel }}-standalone-linux-x64.sh'
+          dest='ibgateway-${{ needs.check-new-version.outputs.build_version }}-standalone-linux-x64.sh'
           curl -sSL "$download_url" --output "$dest"
           sha256sum "$dest" > "${dest}.sha256"
 
       - name: Create release
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create '${{ steps.version.outputs.build_version }}-${{ matrix.channel }}' \
-            -t 'ibgateway ${{ steps.version.outputs.build_version }}-${{ matrix.channel }}' \
+          gh release create '${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
+            -t 'ibgateway ${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
             ibgateway-*
 
-      - name: Update ${{ matrix.channel }}
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
-        run: ./build.sh ${{ matrix.channel }} ${{ steps.version.outputs.build_version }}
+      - name: Update ${{ needs.check-new-version.outputs.channel }}/
+        run: ./build.sh ${{ needs.check-new-version.outputs.channel }} ${{ needs.check-new-version.outputs.build_version }}
 
-      - name: Create PR
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          t_branch='update-${{ matrix.channel }}-to-${{ steps.version.outputs.build_version }}'
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git pull
-          git checkout -b "$t_branch" origin/master
-          git add '${{ matrix.channel }}'
-          git commit -m 'Update `${{ matrix.channel }}` to `${{ steps.version.outputs.build_version }}`'
-          git push --set-upstream origin "$t_branch"
-          gh pr create --base master --fill
+      - name: Test ${{ needs.check-new-version.outputs.channel }}
+        run: exit 0
+
+      - name: Commit with appropriate docker tag
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update ${{ needs.check-new-version.outputs.channel }} to ${{ needs.check-new-version.outputs.build_version }}
+
+          # By itself, will not trigger docker.yml action due to Github restrictions
+          tagging_message: docker-${{needs.check-new-version.outputs.build_version}}-${{needs.check-new-version.outputs.channel}}
+
+  build:
+    name: Trigger Docker Build Action
+    needs: test-and-commit
+    uses: ./.github/workflows/docker.yml

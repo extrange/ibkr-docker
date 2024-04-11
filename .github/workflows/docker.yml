@@ -1,9 +1,10 @@
-name: "Publish Docker"
+name: "Build and Publish Docker Images"
 
 on:
   push:
     tags:
       - "docker-*"
+  workflow_call:
 
 # Triggers building, tagging and pushing of Docker image files
 # Uses tag name to extract channel (latest/stable)
