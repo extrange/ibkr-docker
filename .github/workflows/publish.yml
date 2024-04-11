@@ -41,7 +41,7 @@ jobs:
             type=match,pattern=docker-(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
