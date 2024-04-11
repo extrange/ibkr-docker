@@ -78,7 +78,7 @@ jobs:
       
       - name: Build and start Docker image
         run: |
-          docker build ${{ needs.check-new-version.outputs.channel }} && ./start-docker.sh
+          docker build ${{ needs.check-new-version.outputs.channel }} -t image && ./start-docker.sh
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
