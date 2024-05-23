@@ -44,14 +44,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-new-version
     if: needs.check-new-version.outputs.has_update == 'true'
-    env:
-      dest: /tmp/ibgateway-${{ needs.check-new-version.outputs.build_version }}-standalone-linux-x64.sh
     steps:
       - uses: actions/checkout@v4
 
       - name: Download IB Gateway
         run: |
           download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ needs.check-new-version.outputs.channel }}-standalone/ibgateway-${{ needs.check-new-version.outputs.channel }}-standalone-linux-x64.sh'
+          dest='ibgateway-${{ needs.check-new-version.outputs.build_version }}-standalone-linux-x64.sh'
           curl -sSL "$download_url" --output "$dest"
           sha256sum "$dest" > "${dest}.sha256"
 
@@ -61,7 +60,8 @@ jobs:
         run: |
           gh release create '${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
             -t 'ibgateway ${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
-            /tmp/ibgateway-*
+            ibgateway-*
+          rm ibgateway-*
 
       - name: Update ${{ needs.check-new-version.outputs.channel }}/
         run: ./build.sh ${{ needs.check-new-version.outputs.channel }} ${{ needs.check-new-version.outputs.build_version }}
