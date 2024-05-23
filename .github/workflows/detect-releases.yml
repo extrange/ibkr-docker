@@ -61,7 +61,7 @@ jobs:
         run: |
           gh release create '${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
             -t 'ibgateway ${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
-            "${dest}"
+            /tmp/ibgateway-*
 
       - name: Update ${{ needs.check-new-version.outputs.channel }}/
         run: ./build.sh ${{ needs.check-new-version.outputs.channel }} ${{ needs.check-new-version.outputs.build_version }}
