@@ -16,6 +16,7 @@ jobs:
         channel: ["stable", "latest"]
     outputs:
       build_version: ${{ steps.version.outputs.build_version }}
+      tag: docker-${{ steps.version.outputs.build_version }}-${{ matrix.channel }}
       has_update: ${{ steps.check-update.outputs.has_update }}
       channel: ${{ matrix.channel }}
     steps:
@@ -44,14 +45,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-new-version
     if: needs.check-new-version.outputs.has_update == 'true'
-    env:
-      dest: /tmp/ibgateway-${{ needs.check-new-version.outputs.build_version }}-standalone-linux-x64.sh
     steps:
       - uses: actions/checkout@v4
 
       - name: Download IB Gateway
         run: |
           download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ needs.check-new-version.outputs.channel }}-standalone/ibgateway-${{ needs.check-new-version.outputs.channel }}-standalone-linux-x64.sh'
+          dest='ibgateway-${{ needs.check-new-version.outputs.build_version }}-standalone-linux-x64.sh'
           curl -sSL "$download_url" --output "$dest"
           sha256sum "$dest" > "${dest}.sha256"
 
@@ -61,7 +61,8 @@ jobs:
         run: |
           gh release create '${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
             -t 'ibgateway ${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
-            /tmp/ibgateway-*
+            ibgateway-*
+          rm ibgateway-*
 
       - name: Update ${{ needs.check-new-version.outputs.channel }}/
         run: ./build.sh ${{ needs.check-new-version.outputs.channel }} ${{ needs.check-new-version.outputs.build_version }}
@@ -93,9 +94,13 @@ jobs:
           commit_message: Update ${{ needs.check-new-version.outputs.channel }} to ${{ needs.check-new-version.outputs.build_version }}
 
           # By itself, will not trigger docker.yml action due to Github restrictions
-          tagging_message: docker-${{needs.check-new-version.outputs.build_version}}-${{needs.check-new-version.outputs.channel}}
+          tagging_message: ${{ needs.check-new-version.outputs.tag }}
 
   build:
     name: Trigger Docker Build Action
-    needs: test-and-commit
+    needs:
+      - test-and-commit
+      - check-new-version
     uses: ./.github/workflows/docker.yml
+    with:
+      tag: ${{ needs.check-new-version.outputs.tag }}
