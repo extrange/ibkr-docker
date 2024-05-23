@@ -6,9 +6,9 @@ authors = [
     {name = "extrange", email = "29305375+extrange@users.noreply.github.com"},
 ]
 dependencies = [
-    "pytest>=8.1.1",
+    "pytest>=8.2.1",
     "ib-insync>=0.9.86",
-    "pytest-asyncio>=0.23.6",
+    "pytest-asyncio>=0.23.7",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
