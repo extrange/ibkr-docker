@@ -25,10 +25,10 @@ jobs:
           # Checkout branch which triggered the action
           ref: ${{ github.ref }}
 
-      - name: Extract Channel from Tag Name
+      - name: Extract Channel from workflow input, else tag name
         id: channel
         run: |
-          channel=$(cut -d - -f 3 <<< "${{ github.ref_name }}")
+          channel=$(cut -d - -f 3 <<< "${{ inputs.tag || github.ref_name }}")
           echo "channel=$channel" >> $GITHUB_OUTPUT
 
       - name: Generate image tags from push tags/workflow input
