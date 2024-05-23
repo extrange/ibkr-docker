@@ -81,7 +81,7 @@ jobs:
           docker build ${{ needs.check-new-version.outputs.channel }} -t image
 
       - name: Test ${{ needs.check-new-version.outputs.channel }}
-        run: ./start-docker.sh && pdm run pytest
+        run: ./start-docker.sh && docker ps && pdm run pytest
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
