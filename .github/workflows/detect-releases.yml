@@ -1,31 +1,27 @@
 name: Detect, Test and Publish IB Gateway/TWS Releases
 
 on:
-  schedule:
-    - cron: "0 8 * * *" # 8AM UTC daily
-
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      channel:
+        required: true
+        type: string
 
 jobs:
   check-new-version:
     name: Check for new IBKR stable/latest versions
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        channel: ["stable", "latest"]
     outputs:
       build_version: ${{ steps.version.outputs.build_version }}
-      tag: docker-${{ steps.version.outputs.build_version }}-${{ matrix.channel }}
+      tag: docker-${{ steps.version.outputs.build_version }}-${{ inputs.channel }}
       has_update: ${{ steps.check-update.outputs.has_update }}
-      channel: ${{ matrix.channel }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Get Latest IB Gateway Version
         id: version
         run: |
-          res=$(curl -s https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/version.json)
+          res=$(curl -s https://download2.interactivebrokers.com/installers/ibgateway/${{ inputs.channel }}-standalone/version.json)
           build_version=$(grep -oP '(?<=buildVersion":")[^"]+' <<< "$res")
           echo "build_version=$build_version" >> $GITHUB_OUTPUT
 
@@ -34,7 +30,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release list | grep -qF '${{ steps.version.outputs.build_version }}-${{ matrix.channel }}'; then
+          if gh release list | grep -qF '${{ steps.version.outputs.build_version }}-${{ inputs.channel }}'; then
             echo "has_update=false" >> $GITHUB_OUTPUT
           else
             echo "has_update=true" >> $GITHUB_OUTPUT
@@ -50,7 +46,7 @@ jobs:
 
       - name: Download IB Gateway
         run: |
-          download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ needs.check-new-version.outputs.channel }}-standalone/ibgateway-${{ needs.check-new-version.outputs.channel }}-standalone-linux-x64.sh'
+          download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ inputs.channel }}-standalone/ibgateway-${{ inputs.channel }}-standalone-linux-x64.sh'
           dest='ibgateway-${{ needs.check-new-version.outputs.build_version }}-standalone-linux-x64.sh'
           curl -sSL "$download_url" --output "$dest"
           sha256sum "$dest" > "${dest}.sha256"
@@ -59,13 +55,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create '${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
-            -t 'ibgateway ${{ needs.check-new-version.outputs.build_version }}-${{ needs.check-new-version.outputs.channel }}' \
+          gh release create '${{ needs.check-new-version.outputs.build_version }}-${{ inputs.channel }}' \
+            -t 'ibgateway ${{ needs.check-new-version.outputs.build_version }}-${{ inputs.channel }}' \
             ibgateway-*
           rm ibgateway-*
 
-      - name: Update ${{ needs.check-new-version.outputs.channel }}/
-        run: ./build.sh ${{ needs.check-new-version.outputs.channel }} ${{ needs.check-new-version.outputs.build_version }}
+      - name: Update ${{ inputs.channel }}/
+        run: ./build.sh ${{ inputs.channel }} ${{ needs.check-new-version.outputs.build_version }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -80,9 +76,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build ${{ needs.check-new-version.outputs.channel }} -t image
+          docker build ${{ inputs.channel }} -t image
 
-      - name: Test ${{ needs.check-new-version.outputs.channel }}
+      - name: Test ${{ inputs.channel }}
         run: ./start-docker.sh && docker ps && pdm run pytest
         env:
           USERNAME: ${{ secrets.USERNAME }}
@@ -91,7 +87,7 @@ jobs:
       - name: Commit with appropriate docker tag
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Update ${{ needs.check-new-version.outputs.channel }} to ${{ needs.check-new-version.outputs.build_version }}
+          commit_message: Update ${{ inputs.channel }} to ${{ needs.check-new-version.outputs.build_version }}
 
           # By itself, will not trigger docker.yml action due to Github restrictions
           tagging_message: ${{ needs.check-new-version.outputs.tag }}

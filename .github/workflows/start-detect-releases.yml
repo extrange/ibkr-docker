@@ -1,0 +1,22 @@
+name: Start detect-releases.yml
+# Required because making a matrix element conditional is difficult
+# https://stackoverflow.com/questions/65384420/how-do-i-make-a-github-action-matrix-element-conditional
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # 8AM UTC daily
+
+  workflow_dispatch:
+
+jobs:
+  stable:
+    name: Check stable release
+    uses: ./.github/workflows/detect-releases.yml
+    with:
+      channel: stable
+
+  latest:
+    name: Check latest release
+    uses: ./.github/workflows/detect-releases.yml
+    with:
+      channel: latest
