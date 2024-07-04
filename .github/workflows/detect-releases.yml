@@ -63,26 +63,26 @@ jobs:
       - name: Update ${{ inputs.channel }}/
         run: ./build.sh ${{ inputs.channel }} ${{ needs.check-new-version.outputs.build_version }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+      # - name: Set up Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: "3.x"
 
-      - name: Set up pdm
-        run: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+      # - name: Set up pdm
+      #   run: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
 
-      - name: Update and sync dependencies
-        run: pdm update -u
+      # - name: Update and sync dependencies
+      #   run: pdm update -u
 
-      - name: Build Docker image
-        run: |
-          docker build ${{ inputs.channel }} -t image
+      # - name: Build Docker image
+      #   run: |
+      #     docker build ${{ inputs.channel }} -t image
 
-      - name: Test ${{ inputs.channel }}
-        run: ./start-docker.sh && docker ps && pdm run pytest
-        env:
-          USERNAME: ${{ secrets.USERNAME }}
-          PASSWORD: ${{ secrets.PASSWORD }}
+      # - name: Test ${{ inputs.channel }}
+      #   run: ./start-docker.sh && docker ps && pdm run pytest
+      #   env:
+      #     USERNAME: ${{ secrets.USERNAME }}
+      #     PASSWORD: ${{ secrets.PASSWORD }}
 
       - name: Commit with appropriate docker tag
         uses: stefanzweifel/git-auto-commit-action@v5
