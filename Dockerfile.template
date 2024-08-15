@@ -1,9 +1,9 @@
-FROM debian:latest as setup
+FROM debian:12 AS setup
 
-ENV IBC_VERSION=3.19.0
+ENV IBC_VERSION=3.20.0
 
-RUN apt update && \
-    apt install --no-install-recommends -y \
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
     ca-certificates git libxtst6 libgtk-3-0 openbox procps python3 socat tigervnc-standalone-server unzip wget2 xterm \
     # https://github.com/extrange/ibkr-docker/issues/74
     libasound2 \
@@ -27,11 +27,11 @@ RUN wget2 https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLi
 ENV INSTALL_FILENAME="ibgateway-${VERSION}-standalone-linux-x64.sh"
 
 # Fetch hashes
-RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/${VERSION}-${CHANNEL}/ibgateway-${VERSION}-standalone-linux-x64.sh.sha256 \
+RUN wget2 "https://github.com/extrange/ibkr-docker/releases/download/${VERSION}-${CHANNEL}/ibgateway-${VERSION}-standalone-linux-x64.sh.sha256" \
     -O hash
 
 # Download IB Gateway (which contains TWS) and check hashes
-RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/${VERSION}-${CHANNEL}/ibgateway-${VERSION}-standalone-linux-x64.sh \
+RUN wget2 "https://github.com/extrange/ibkr-docker/releases/download/${VERSION}-${CHANNEL}/ibgateway-${VERSION}-standalone-linux-x64.sh" \
     -O "$INSTALL_FILENAME" \
     && sha256sum -c hash \
     && chmod +x "$INSTALL_FILENAME" \
@@ -39,10 +39,10 @@ RUN wget2 https://github.com/extrange/ibkr-docker/releases/download/${VERSION}-$
     && rm "$INSTALL_FILENAME"
 
 # Copy scripts
-COPY image-files/start.sh image-files/replace.sh ./
+COPY image-files/start.sh image-files/replace.sh /
 
 RUN mkdir -p ~/ibc && mv /opt/ibc/config.ini ~/ibc/config.ini
 
-RUN chmod a+x *.sh /opt/ibc/*.sh /opt/ibc/scripts/*.sh
+RUN chmod a+x ./*.sh /opt/ibc/*.sh /opt/ibc/scripts/*.sh
 
-CMD [ "./start.sh" ]
+CMD [ "/start.sh" ]
