@@ -61,8 +61,12 @@ TWS_MAJOR_VERSION=$(ls ~/Jts/ibgateway/.)
 # so we need to supply it here. The rest of the arguments can be read from
 # the config.ini file.
 
+# if unset, user old variable names
+[[ -z "$IBKRUSER" ]] && IBKRUSER=$USERNAME
+[[ -z "$IBKRPASS" ]] && IBKRUSER=$PASSWORD
+
 exec /opt/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VERSION}" $command \
-    "--user=${USERNAME:-}" \
-    "--pw=${PASSWORD:-}" \
+    "--user=${IBKRUSER:-}" \
+    "--pw=${IBKRPASS:-}" \
     "--on2fatimeout=${TWOFA_TIMEOUT_ACTION:-restart}" \
     "--tws-settings-path=${TWS_SETTINGS_PATH:-}"

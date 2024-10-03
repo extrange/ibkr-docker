@@ -49,8 +49,8 @@ docker run -d \
   -p "127.0.0.1:6080:6080" \
   -p "127.0.0.1:8888:8888" \
   --ulimit nofile=10000 \
-  -e USERNAME=your_username \
-  -e PASSWORD=your_password \
+  -e IBKRUSER=your_username \
+  -e IBKRPASS=your_password \
   ghcr.io/extrange/ibkr:latest
 ```
 
@@ -59,9 +59,9 @@ docker run -d \
 Create a `.env` file:
 
 ```bash
-USERNAME=<your IBKR username>
+IBKRUSER=<your IBKR username>
 # wrap password in single quotes if $, /, or \ are present
-PASSWORD='<your IBKR password>'
+IBKRPASS='<your IBKR password>'
 ```
 
 `compose.yml`:
@@ -77,8 +77,8 @@ services:
     ulimits:
       nofile: 10000 # See FAQ
     environment:
-      USERNAME: ${USERNAME}
-      PASSWORD: ${PASSWORD}
+      IBKRUSER: ${IBKRUSER}
+      IBKRPASS: ${IBKRPASS}
       # TWOFA_TIMEOUT_ACTION: restart
       # GATEWAY_OR_TWS: tws
       #
@@ -99,8 +99,8 @@ View at [localhost:6080](http://localhost:6080).
 
 | Variable               | Description                                                      | Default    |
 |------------------------|------------------------------------------------------------------|------------|
-| `USERNAME`             | Username                                                         | `edemo`    |
-| `PASSWORD`             | Password                                                         | `demouser` |
+| `IBKRUSER`             | Username                                                         | `edemo`    |
+| `IBKRPASS`             | Password                                                         | `demouser` |
 | `GATEWAY_OR_TWS`       | What to start, either `tws` or `gateway`                         | `tws`      |
 | `TWOFA_TIMEOUT_ACTION` | [2FA timeout action][twofa-timeout]. Either `restart` or `exit`. | `restart`  |
 | `TWS_SETTINGS_PATH`    | (optional) Path to store TWS settings (see FAQ)                  |            |
