@@ -16,7 +16,7 @@ jobs:
       tag: docker-${{ steps.version.outputs.build_version }}-${{ inputs.channel }}
       has_update: ${{ steps.check-update.outputs.has_update }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Get Latest IB Gateway Version
         id: version
@@ -42,7 +42,7 @@ jobs:
     needs: check-new-version
     if: needs.check-new-version.outputs.has_update == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Download IB Gateway
         run: |
@@ -85,7 +85,7 @@ jobs:
       #     PASSWORD: ${{ secrets.PASSWORD }}
 
       - name: Commit with appropriate docker tag
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
         with:
           commit_message: Update ${{ inputs.channel }} to ${{ needs.check-new-version.outputs.build_version }}
 
