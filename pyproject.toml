@@ -1,22 +1,19 @@
 [project]
 name = "ibkr-docker"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "IBKR in Docker"
 authors = [
-    {name = "extrange", email = "29305375+extrange@users.noreply.github.com"},
+    { name = "extrange", email = "29305375+extrange@users.noreply.github.com" },
 ]
-dependencies = [
-    "pytest>=8.2.1",
-    "ib-insync>=0.9.86",
-    "pytest-asyncio>=0.23.7",
-]
-requires-python = "==3.12.*"
+dependencies = ["ib-insync>=0.9.86"]
+requires-python = ">=3.12"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
-
-[tool.pdm]
-distribution = false
-
-[tool.pdm.scripts]
-test = "pytest"
+[tool.uv]
+dev-dependencies = [
+    "ipykernel>=6.29.5",
+    "pyright[nodejs]>=1.1.382.post0",
+    "ruff>=0.6.8",
+    "pytest>=8.3.3",
+]
