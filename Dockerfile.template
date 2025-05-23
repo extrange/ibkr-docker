@@ -1,6 +1,6 @@
 FROM debian:12 AS setup
 
-ENV IBC_VERSION=3.20.0
+ENV IBC_VERSION=3.22.0
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
