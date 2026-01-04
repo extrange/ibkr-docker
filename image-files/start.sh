@@ -15,7 +15,7 @@ Xvnc -SecurityTypes None -AlwaysShared=1 -geometry 1920x1080 :0 &
 ./noVNC/utils/novnc_proxy --vnc localhost:5900 &
 
 # Start openbox
-openbox &
+openbox-session &
 
 # Start either TWS or IB Gateway
 if [[ -z ${GATEWAY_OR_TWS:-} ]]; then
