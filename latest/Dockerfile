@@ -1,4 +1,4 @@
-FROM debian:13@sha256:fd8f5a1df07b5195613e4b9a0b6a947d3772a151b81975db27d47f093f60c6e6 AS setup
+FROM debian:13@sha256:c71b05eac0b20adb4cdcc9f7b052227efd7da381ad10bb92f972e8eae7c6cdc9 AS setup
 
 ENV IBC_VERSION=3.22.0
 
