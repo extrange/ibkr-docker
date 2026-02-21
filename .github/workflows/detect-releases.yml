@@ -16,7 +16,7 @@ jobs:
       tag: docker-${{ steps.version.outputs.build_version }}-${{ inputs.channel }}
       has_update: ${{ steps.check-update.outputs.has_update }}
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Get Latest IB Gateway Version
         id: version
@@ -42,7 +42,7 @@ jobs:
     needs: check-new-version
     if: needs.check-new-version.outputs.has_update == 'true'
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Download IB Gateway
         run: |
