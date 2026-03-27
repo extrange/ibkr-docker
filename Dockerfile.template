@@ -1,10 +1,11 @@
 FROM debian:13@sha256:5cf544fad978371b3df255b61e209b373583cb88b733475c86e49faa15ac2104 AS setup
 
 ENV IBC_VERSION=3.22.0
+ENV TZ=UTC
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
-    ca-certificates git libxtst6 libgtk-3-0 openbox procps python3 socat tigervnc-standalone-server unzip wget2 xterm tint2 \
+    ca-certificates git libxtst6 libgtk-3-0 openbox procps python3 socat tigervnc-standalone-server unzip wget2 xterm tint2 tzdata \
     # https://github.com/extrange/ibkr-docker/issues/74
     libasound2 \
     libnss3 \
