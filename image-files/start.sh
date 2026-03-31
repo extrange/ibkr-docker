@@ -14,8 +14,11 @@ Xvnc -SecurityTypes None -AlwaysShared=1 -geometry 1920x1080 :0 &
 # Start noVNC server
 ./noVNC/utils/novnc_proxy --vnc localhost:5900 &
 
+# Wait for Xvnc to be ready before starting openbox
+until [ -S /tmp/.X11-unix/X0 ]; do sleep 0.1; done
+
 # Start openbox
-openbox &
+openbox-session &
 
 # Start either TWS or IB Gateway
 if [[ -z ${GATEWAY_OR_TWS:-} ]]; then
