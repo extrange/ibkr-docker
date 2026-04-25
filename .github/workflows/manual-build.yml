@@ -1,0 +1,76 @@
+name: "Manual Build"
+
+# Trigger from Actions tab: pick a channel and optionally pin a version.
+# Useful for rebuilding an older IBKR version with newer image-files changes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Channel'
+        required: true
+        type: choice
+        options: [latest, stable]
+      version:
+        description: 'IBKR version (e.g. 10.44.1e). Leave blank for current.'
+        required: false
+        type: string
+
+jobs:
+  build:
+    name: Build ${{ inputs.channel }} ${{ inputs.version || '(current)' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [[ -n "${{ inputs.version }}" ]]; then
+            ver="${{ inputs.version }}"
+          else
+            ver=$(./ibkr-version.sh ${{ inputs.channel }})
+          fi
+          echo "version=$ver" >> $GITHUB_OUTPUT
+          echo "major_minor=$(echo "$ver" | sed 's/\([0-9]*\.[0-9]*\).*/\1/')" >> $GITHUB_OUTPUT
+
+      - name: Regenerate build context with current image-files
+        run: ./build.sh ${{ inputs.channel }} ${{ steps.version.outputs.version }}
+
+      - name: Sanitize branch name for Docker tag
+        id: branch
+        run: |
+          name=$(echo "${GITHUB_REF_NAME}" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
+          echo "name=$name" >> $GITHUB_OUTPUT
+          [[ "${GITHUB_REF_NAME}" == "master" ]] && echo "is_master=true" >> $GITHUB_OUTPUT || echo "is_master=false" >> $GITHUB_OUTPUT
+
+      - name: Compute image tags
+        id: tags
+        env:
+          IMAGE: ghcr.io/rjemanuele/ibkr
+          VERSION: ${{ steps.version.outputs.version }}
+          MAJOR_MINOR: ${{ steps.version.outputs.major_minor }}
+          CHANNEL: ${{ inputs.channel }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          IS_MASTER: ${{ steps.branch.outputs.is_master }}
+        run: |
+          if [[ "$IS_MASTER" == "true" ]]; then
+            echo "tags=${IMAGE}:${VERSION}-${CHANNEL},${IMAGE}:${MAJOR_MINOR},${IMAGE}:${CHANNEL}" >> $GITHUB_OUTPUT
+          else
+            echo "tags=${IMAGE}:${VERSION}-${CHANNEL}-${BRANCH},${IMAGE}:${MAJOR_MINOR}-${BRANCH},${IMAGE}:${CHANNEL}-${BRANCH}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
+        with:
+          context: ${{ inputs.channel }}
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}

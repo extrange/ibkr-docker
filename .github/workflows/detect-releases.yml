@@ -21,8 +21,7 @@ jobs:
       - name: Get Latest IB Gateway Version
         id: version
         run: |
-          res=$(curl -s https://download2.interactivebrokers.com/installers/ibgateway/${{ inputs.channel }}-standalone/version.json)
-          build_version=$(grep -oP '(?<=buildVersion":")[^"]+' <<< "$res")
+          build_version=$(./ibkr-version.sh ${{ inputs.channel }})
           echo "build_version=$build_version" >> $GITHUB_OUTPUT
 
       - name: Check Latest Version against Releases
