@@ -54,6 +54,19 @@ socat -d -d TCP-LISTEN:8888,fork TCP:127.0.0.1:${port} &
 # Hacky way to get the major version for IB Gateway/TWS
 TWS_MAJOR_VERSION=$(ls ~/Jts/ibgateway/.)
 
+# IB's installer records the location of the JRE it unpacked for its own use in
+# .install4j/inst_jre.cfg. That extraction directory (…<pid>.dir) is deleted as
+# soon as the installation finishes, so IBC can no longer find a Java
+# installation at runtime (see issue #155). Point IBC at the JRE that ships
+# with the Gateway/TWS installation instead.
+java_path_args=()
+if [[ -x ~/Jts/ibgateway/"${TWS_MAJOR_VERSION}"/jre/bin/java ]]; then
+    java_path_args=("--java-path=$HOME/Jts/ibgateway/${TWS_MAJOR_VERSION}/jre/bin")
+else
+    printf "Warning: no JRE found at %s, falling back to IBC's own detection\n" \
+        "$HOME/Jts/ibgateway/${TWS_MAJOR_VERSION}/jre/bin"
+fi
+
 # Override /opt/ibc/config.ini with environment variables
 ./replace.sh ~/ibc/config.ini
 
@@ -65,4 +78,5 @@ exec /opt/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VERSION}" $command \
     "--user=${USERNAME:-}" \
     "--pw=${PASSWORD:-}" \
     "--on2fatimeout=${TWOFA_TIMEOUT_ACTION:-restart}" \
-    "--tws-settings-path=${TWS_SETTINGS_PATH:-}"
+    "--tws-settings-path=${TWS_SETTINGS_PATH:-}" \
+    "${java_path_args[@]}"
