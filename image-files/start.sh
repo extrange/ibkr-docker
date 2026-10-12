@@ -3,6 +3,13 @@
 # Fail fast
 set -Eeuo pipefail
 
+# Don't drop core files by default
+_acf="${ALLOW_CORE_FILES:-}"
+if [[ "${_acf,,}" != "true" ]]; then
+    ulimit -c 0
+fi
+unset _acf
+
 export DISPLAY=:0
 
 # Clear previous lockfile
@@ -14,8 +21,15 @@ Xvnc -SecurityTypes None -AlwaysShared=1 -geometry 1920x1080 :0 &
 # Start noVNC server
 ./noVNC/utils/novnc_proxy --vnc localhost:5900 &
 
+# Wait for Xvnc to be ready before starting openbox
+until [ -S /tmp/.X11-unix/X0 ]; do sleep 0.1; done
+
 # Start openbox
-openbox &
+opts=()
+if [ -f "$HOME/.config/openbox/rc.xml" ]; then
+    opts+=(--config-file "$HOME/.config/openbox/rc.xml")
+fi
+openbox-session "${opts[@]}" &
 
 # Start either TWS or IB Gateway
 if [[ -z ${GATEWAY_OR_TWS:-} ]]; then
