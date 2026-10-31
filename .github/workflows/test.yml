@@ -1,0 +1,173 @@
+name: Test
+
+# Static checks, image builds, and (when credentials are configured) the live
+# IB Gateway API test in tests/test_ibkr.py.
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-typecheck:
+    name: Lint and type check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Lint with ruff
+        run: uv run --frozen ruff check --output-format=github .
+
+      - name: Check formatting with ruff
+        run: uv run --frozen ruff format --check .
+
+      - name: Type check with pyright
+        run: uv run --frozen pyright
+
+  check-credentials:
+    name: Check for IBKR credentials
+    runs-on: ubuntu-latest
+    outputs:
+      has_credentials: ${{ steps.check.outputs.has_credentials }}
+    steps:
+      - name: Check secrets
+        id: check
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: |
+          if [[ -n "$USERNAME" && -n "$PASSWORD" ]]; then
+            echo "has_credentials=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_credentials=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::USERNAME/PASSWORD secrets are not set; skipping the live IBKR test."
+          fi
+
+  docker-build:
+    name: Build image (${{ matrix.channel }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        channel:
+          - stable
+          - latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Build ${{ matrix.channel }} image
+        uses: docker/build-push-action@1dc73863535b631f98b2378be8619f83b136f4a0 # v6
+        with:
+          context: ${{ matrix.channel }}
+          push: false
+          load: true
+          tags: ibkr:${{ matrix.channel }}
+
+      - name: Smoke test image
+        run: |
+          docker run --rm --entrypoint bash "ibkr:${{ matrix.channel }}" -c '
+            set -e
+            test -x /start.sh
+            test -x /replace.sh
+            test -x /opt/ibc/scripts/ibcstart.sh
+            test -x /noVNC/utils/novnc_proxy
+            test -f /noVNC/index.html
+            test -f /root/ibc/config.ini
+            echo "Image contents look good"
+          '
+
+  integration:
+    name: Integration test (IB Gateway)
+    runs-on: ubuntu-latest
+    needs:
+      - check-credentials
+      - docker-build
+    # Live logins are deliberately skipped for pull requests, including
+    # same-repo PRs where the secrets happen to be available.
+    if: >-
+      needs.check-credentials.outputs.has_credentials == 'true' &&
+      github.event_name != 'pull_request'
+    timeout-minutes: 40
+    env:
+      USERNAME: ${{ secrets.USERNAME }}
+      PASSWORD: ${{ secrets.PASSWORD }}
+      CONTAINER: ibkr-test
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+
+      - name: Build latest image
+        run: docker build --tag ibkr:latest-test latest
+
+      - name: Start IB Gateway
+        run: |
+          docker run --detach --name "$CONTAINER" \
+            --publish 127.0.0.1:8888:8888 \
+            --ulimit nofile=10000 \
+            --env USERNAME \
+            --env PASSWORD \
+            --env GATEWAY_OR_TWS=gateway \
+            --env IBC_TradingMode=paper \
+            --env IBC_AcceptNonBrokerageAccountWarning=yes \
+            --env IBC_AcceptIncomingConnectionAction=accept \
+            ibkr:latest-test
+
+      - name: Wait for IB Gateway to accept API connections
+        run: |
+          # IB Gateway only opens its API port after IBC has logged in, which
+          # can take several minutes and may involve a 2FA prompt.
+          for attempt in $(seq 1 90); do
+            if ! docker inspect --format '{{.State.Running}}' "$CONTAINER" | grep -q true; then
+              echo "Container exited unexpectedly"
+              docker logs --tail 200 "$CONTAINER" || true
+              exit 1
+            fi
+            if docker exec "$CONTAINER" bash -c 'exec 3<>/dev/tcp/127.0.0.1/4002' 2>/dev/null; then
+              echo "IB Gateway is accepting API connections"
+              exit 0
+            fi
+            echo "Waiting for IB Gateway... (attempt $attempt/90)"
+            sleep 10
+          done
+          echo "Timed out waiting for IB Gateway"
+          docker logs --tail 200 "$CONTAINER" || true
+          exit 1
+
+      - name: Run tests
+        # pytest-asyncio is not in pyproject.toml yet, so add it to the
+        # environment for this run only.
+        run: uv run --frozen --with pytest-asyncio pytest tests -v
+
+      - name: Show container logs
+        if: failure()
+        run: docker logs --tail 200 "$CONTAINER" || true
+
+      - name: Remove container
+        if: always()
+        run: docker rm --force "$CONTAINER" || true
