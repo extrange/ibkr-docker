@@ -5,6 +5,7 @@ ENV IBC_VERSION=3.24.2
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
     ca-certificates git libxtst6 libgtk-3-0 openbox procps python3 socat tigervnc-standalone-server unzip wget2 xterm \
+    chromium fonts-liberation xdg-utils \
     # https://github.com/extrange/ibkr-docker/issues/74
     libasound2 \
     libnss3 \
@@ -24,14 +25,14 @@ RUN wget2 https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLi
     && unzip ibc.zip -d /opt/ibc \
     && rm ibc.zip
 
-ENV INSTALL_FILENAME="ibgateway-10.50.1f-standalone-linux-x64.sh"
+ENV INSTALL_FILENAME="ibgateway-10.50.1g-standalone-linux-x64.sh"
 
 # Fetch hashes
-RUN wget2 "https://github.com/extrange/ibkr-docker/releases/download/10.50.1f-stable/ibgateway-10.50.1f-standalone-linux-x64.sh.sha256" \
+RUN wget2 "https://github.com/extrange/ibkr-docker/releases/download/10.50.1g-stable/ibgateway-10.50.1g-standalone-linux-x64.sh.sha256" \
     -O hash
 
 # Download IB Gateway (which contains TWS) and check hashes
-RUN wget2 "https://github.com/extrange/ibkr-docker/releases/download/10.50.1f-stable/ibgateway-10.50.1f-standalone-linux-x64.sh" \
+RUN wget2 "https://github.com/extrange/ibkr-docker/releases/download/10.50.1g-stable/ibgateway-10.50.1g-standalone-linux-x64.sh" \
     -O "$INSTALL_FILENAME" \
     && sha256sum -c hash \
     && chmod +x "$INSTALL_FILENAME" \
@@ -40,6 +41,17 @@ RUN wget2 "https://github.com/extrange/ibkr-docker/releases/download/10.50.1f-st
 
 # Copy scripts
 COPY image-files/start.sh image-files/replace.sh /
+
+# Chromium is the browser TWS/Gateway opens its settings UI in (issue #160).
+# It cannot use its own sandbox as root, so wrap it and register the wrapper as
+# the system browser via $BROWSER, the alternatives system and the MIME default.
+COPY image-files/chromium-root /usr/local/bin/chromium-root
+COPY image-files/chromium-root.desktop /usr/share/applications/chromium-root.desktop
+COPY image-files/root/ /root/
+RUN chmod +x /usr/local/bin/chromium-root \
+    && update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/local/bin/chromium-root 200 \
+    && update-alternatives --install /usr/bin/gnome-www-browser gnome-www-browser /usr/local/bin/chromium-root 200
+ENV BROWSER=/usr/local/bin/chromium-root
 
 RUN mkdir -p ~/ibc && mv /opt/ibc/config.ini ~/ibc/config.ini
 
