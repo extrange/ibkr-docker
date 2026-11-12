@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Chromium refuses to run as root without --no-sandbox, and containers have a
+# tiny /dev/shm by default. Wrap both so this can be the system web browser.
+exec chromium --no-sandbox --disable-dev-shm-usage --no-first-run --no-default-browser-check "$@"
